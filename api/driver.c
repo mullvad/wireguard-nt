@@ -355,7 +355,7 @@ MaybeGetRunningDriverVersion(BOOL ReturnOneIfRunningInsteadOfVersion)
     for (ULONG i = Modules->NumberOfModules; i-- > 0;)
     {
         LPCSTR NtPath = (LPCSTR)Modules->Modules[i].FullPathName;
-        if (!_stricmp(&NtPath[Modules->Modules[i].OffsetToFileName], "wireguard.sys"))
+        if (!_stricmp(&NtPath[Modules->Modules[i].OffsetToFileName], "mullvad-wireguard.sys"))
         {
             if (ReturnOneIfRunningInsteadOfVersion)
             {
@@ -534,9 +534,9 @@ DriverInstall(HDEVINFO *DevInfoExistingAdaptersForCleanup, SP_DEVINFO_DATA_LIST 
     WCHAR CatPath[MAX_PATH] = { 0 };
     WCHAR SysPath[MAX_PATH] = { 0 };
     WCHAR InfPath[MAX_PATH] = { 0 };
-    if (!PathCombineW(CatPath, RandomTempSubDirectory, L"wireguard.cat") ||
-        !PathCombineW(SysPath, RandomTempSubDirectory, L"wireguard.sys") ||
-        !PathCombineW(InfPath, RandomTempSubDirectory, L"wireguard.inf"))
+    if (!PathCombineW(CatPath, RandomTempSubDirectory, L"mullvad-wireguard.cat") ||
+        !PathCombineW(SysPath, RandomTempSubDirectory, L"mullvad-wireguard.sys") ||
+        !PathCombineW(InfPath, RandomTempSubDirectory, L"mullvad-wireguard.inf"))
     {
         LastError = ERROR_BUFFER_OVERFLOW;
         goto cleanupDirectory;
@@ -545,21 +545,21 @@ DriverInstall(HDEVINFO *DevInfoExistingAdaptersForCleanup, SP_DEVINFO_DATA_LIST 
     WCHAR *CatSource, *SysSource, *InfSource;
     if (NativeMachine == IMAGE_FILE_PROCESS)
     {
-        CatSource = L"wireguard.cat";
-        SysSource = L"wireguard.sys";
-        InfSource = L"wireguard.inf";
+        CatSource = L"mullvad-wireguard.cat";
+        SysSource = L"mullvad-wireguard.sys";
+        InfSource = L"mullvad-wireguard.inf";
     }
     else if (NativeMachine == IMAGE_FILE_MACHINE_AMD64)
     {
-        CatSource = L"wireguard-amd64.cat";
-        SysSource = L"wireguard-amd64.sys";
-        InfSource = L"wireguard-amd64.inf";
+        CatSource = L"mullvad-wireguard-amd64.cat";
+        SysSource = L"mullvad-wireguard-amd64.sys";
+        InfSource = L"mullvad-wireguard-amd64.inf";
     }
     else if (NativeMachine == IMAGE_FILE_MACHINE_ARM64)
     {
-        CatSource = L"wireguard-arm64.cat";
-        SysSource = L"wireguard-arm64.sys";
-        InfSource = L"wireguard-arm64.inf";
+        CatSource = L"mullvad-wireguard-arm64.cat";
+        SysSource = L"mullvad-wireguard-arm64.sys";
+        InfSource = L"mullvad-wireguard-arm64.inf";
     }
     else
     {

@@ -34,7 +34,7 @@ static HMODULE
 InitializeWireGuardNT(void)
 {
     HMODULE WireGuardDll =
-        LoadLibraryExW(L"wireguard.dll", NULL, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+        LoadLibraryExW(L"mullvad-wireguard.dll", NULL, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (!WireGuardDll)
         return NULL;
 #define X(Name) ((*(FARPROC *)&Name = GetProcAddress(WireGuardDll, #Name)) == NULL)

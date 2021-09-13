@@ -26,42 +26,42 @@
   </Target>
 
   <Target Name="Driver-x86"
-    Outputs="$(Configuration)\x86\driver\wireguard.sys;$(Configuration)\x86\driver\wireguard.inf;$(Configuration)\x86\driver\wireguard.cat">
+    Outputs="$(Configuration)\x86\driver\mullvad-wireguard.sys;$(Configuration)\x86\driver\mullvad-wireguard.inf;$(Configuration)\x86\driver\mullvad-wireguard.cat">
     <MSBuild Projects="driver\driver.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Win32" />
   </Target>
   <Target Name="Driver-amd64"
-    Outputs="$(Configuration)\amd64\driver\wireguard.sys;$(Configuration)\amd64\driver\wireguard.inf;$(Configuration)\amd64\driver\wireguard.cat">
+    Outputs="$(Configuration)\amd64\driver\mullvad-wireguard.sys;$(Configuration)\amd64\driver\mullvad-wireguard.inf;$(Configuration)\amd64\driver\mullvad-wireguard.cat">
     <MSBuild Projects="driver\driver.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
   </Target>
   <Target Name="Driver-arm"
-    Outputs="$(Configuration)\arm\driver\wireguard.sys;$(Configuration)\arm\driver\wireguard.inf;$(Configuration)\arm\driver\wireguard.cat">
+    Outputs="$(Configuration)\arm\driver\mullvad-wireguard.sys;$(Configuration)\arm\driver\mullvad-wireguard.inf;$(Configuration)\arm\driver\mullvad-wireguard.cat">
     <MSBuild Projects="driver\driver.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=ARM" />
   </Target>
   <Target Name="Driver-arm64"
-    Outputs="$(Configuration)\arm64\driver\wireguard.sys;$(Configuration)\arm64\driver\wireguard.inf;$(Configuration)\arm64\driver\wireguard.cat">
+    Outputs="$(Configuration)\arm64\driver\mullvad-wireguard.sys;$(Configuration)\arm64\driver\mullvad-wireguard.inf;$(Configuration)\arm64\driver\mullvad-wireguard.cat">
     <MSBuild Projects="driver\driver.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=ARM64" />
   </Target>
 
   <!--
-    wireguard.dll Building
+    mullvad-wireguard.dll Building
   -->
   <Target Name="Dll-x86"
-    Outputs="$(Configuration)\x86\wireguard.dll"
+    Outputs="$(Configuration)\x86\mullvad-wireguard.dll"
     DependsOnTargets="Dll-amd64;Dll-arm64">
     <MSBuild Projects="setupapihost\setupapihost.vcxproj;api\api.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Win32" />
   </Target>
   <Target Name="Dll-amd64"
-    Outputs="$(Configuration)\amd64\wireguard.dll"
+    Outputs="$(Configuration)\amd64\mullvad-wireguard.dll"
     DependsOnTargets="Dll-arm64">
     <MSBuild Projects="setupapihost\setupapihost.vcxproj;api\api.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=x64" />
   </Target>
   <Target Name="Dll-arm"
-    Outputs="$(Configuration)\arm\wireguard.dll"
+    Outputs="$(Configuration)\arm\mullvad-wireguard.dll"
     DependsOnTargets="Dll-arm64">
     <MSBuild Projects="setupapihost\setupapihost.vcxproj;api\api.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=ARM" />
   </Target>
   <Target Name="Dll-arm64"
-    Outputs="$(Configuration)\arm64\wireguard.dll">
+    Outputs="$(Configuration)\arm64\mullvad-wireguard.dll">
     <MSBuild Projects="setupapihost\setupapihost.vcxproj;api\api.vcxproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=ARM64" />
   </Target>
 
@@ -76,10 +76,10 @@
     <ZipFilesSrc Include="prebuilt-binaries-license.txt"        /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\LICENSE.txt"             />
     <ZipFilesSrc Include="README.md"                            /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\README.md"               />
     <ZipFilesSrc Include="api\wireguard.h"                      /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\include\wireguard.h"     />
-    <ZipFilesSrc Include="$(Configuration)\amd64\wireguard.dll" /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\amd64\wireguard.dll" />
-    <ZipFilesSrc Include="$(Configuration)\arm\wireguard.dll"   /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\arm\wireguard.dll"   />
-    <ZipFilesSrc Include="$(Configuration)\arm64\wireguard.dll" /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\arm64\wireguard.dll" />
-    <ZipFilesSrc Include="$(Configuration)\x86\wireguard.dll"   /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\x86\wireguard.dll"   />
+    <ZipFilesSrc Include="$(Configuration)\amd64\mullvad-wireguard.dll" /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\amd64\mullvad-wireguard.dll" />
+    <ZipFilesSrc Include="$(Configuration)\arm\mullvad-wireguard.dll"   /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\arm\mullvad-wireguard.dll"   />
+    <ZipFilesSrc Include="$(Configuration)\arm64\mullvad-wireguard.dll" /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\arm64\mullvad-wireguard.dll" />
+    <ZipFilesSrc Include="$(Configuration)\x86\mullvad-wireguard.dll"   /><ZipFilesDst Include="$(ZipIntDir)wireguard-nt\bin\x86\mullvad-wireguard.dll"   />
   </ItemGroup>
   <Target Name="Zip"
     Inputs="@(ZipFilesSrc)"

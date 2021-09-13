@@ -4,6 +4,7 @@
     <ProjectGuid>{8B282C8F-5870-44C3-9A2A-B9091F4E9F68}</ProjectGuid>
     <RootNamespace>driver</RootNamespace>
     <ProjectName>driver</ProjectName>
+    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
@@ -13,7 +14,7 @@
   </PropertyGroup>
   <Import Project="..\wireguard-nt.props" />
   <PropertyGroup>
-    <TargetName>wireguard</TargetName>
+    <TargetName>mullvad-wireguard</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -74,7 +75,7 @@
     <ResourceCompile Include="wireguard.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="wireguard.inf" />
+    <Inf Include="mullvad-wireguard.inf" />
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>

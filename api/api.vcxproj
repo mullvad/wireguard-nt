@@ -11,7 +11,7 @@
   </PropertyGroup>
   <Import Project="..\wireguard-nt.props" />
   <PropertyGroup>
-    <TargetName>wireguard</TargetName>
+    <TargetName>mullvad-wireguard</TargetName>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -27,8 +27,8 @@
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\$(Configuration)\$(WireGuardPlatform);..\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="Exists('..\$(Configuration)\arm64\driver\wireguard.sys') And Exists('..\$(Configuration)\arm64\setupapihost.dll')">BUILT_ARM64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="Exists('..\$(Configuration)\amd64\driver\wireguard.sys') And Exists('..\$(Configuration)\amd64\setupapihost.dll')">BUILT_AMD64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="Exists('..\$(Configuration)\arm64\driver\mullvad-wireguard.sys') And Exists('..\$(Configuration)\arm64\setupapihost.dll')">BUILT_ARM64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="Exists('..\$(Configuration)\amd64\driver\mullvad-wireguard.sys') And Exists('..\$(Configuration)\amd64\setupapihost.dll')">BUILT_AMD64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WANT_ARM64_WOW64;WANT_AMD64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">WANT_ARM64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM'">WANT_ARM64_WOW64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -79,8 +79,8 @@
   <PropertyGroup>
     <CleanDependsOn>CleanInfVersion;CleanNci;$(CleanDependsOn)</CleanDependsOn>
   </PropertyGroup>
-  <Target Name="BuildInfVersion" BeforeTargets="ClCompile" Inputs="$(OutDir)driver\wireguard.inf" Outputs="$(IntDir)wireguard-inf.h">
-    <Exec Command="cscript.exe /nologo &quot;extract-driverver.js&quot; &lt; &quot;$(OutDir)driver\wireguard.inf&quot; &gt; &quot;$(IntDir)wireguard-inf.h&quot;" />
+  <Target Name="BuildInfVersion" BeforeTargets="ClCompile" Inputs="$(OutDir)driver\mullvad-wireguard.inf" Outputs="$(IntDir)wireguard-inf.h">
+    <Exec Command="cscript.exe /nologo &quot;extract-driverver.js&quot; &lt; &quot;$(OutDir)driver\mullvad-wireguard.inf&quot; &gt; &quot;$(IntDir)wireguard-inf.h&quot;" />
   </Target>
   <Target Name="CleanInfVersion">
     <Delete Files="$(IntDir)wireguard-inf.h" />

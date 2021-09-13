@@ -11,7 +11,7 @@
 #include <cfgmgr32.h>
 #include <Windows.h>
 
-#define WIREGUARD_HWID L"WireGuard"
+#define WIREGUARD_HWID L"MullvadWireGuard"
 #define WIREGUARD_ENUMERATOR (IsWindows7 ? L"ROOT\\" WIREGUARD_HWID : L"SWD\\" WIREGUARD_HWID)
 
 extern const DEVPROPKEY DEVPKEY_WireGuard_Name;

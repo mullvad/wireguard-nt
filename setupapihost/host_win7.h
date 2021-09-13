@@ -6,7 +6,7 @@
 #include <devguid.h>
 #include <cfgmgr32.h>
 
-#define WIREGUARD_HWID L"WireGuard"
+#define WIREGUARD_HWID L"MullvadWireGuard"
 
 VOID __stdcall CreateInstanceWin7(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 {

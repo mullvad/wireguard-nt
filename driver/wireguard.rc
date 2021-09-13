@@ -27,9 +27,9 @@ BEGIN
       VALUE "CompanyName", "WireGuard LLC"
       VALUE "FileDescription", "WireGuard Driver"
       VALUE "FileVersion", EXPAND(WIREGUARD_VERSION)
-      VALUE "InternalName", "wireguard.sys"
+      VALUE "InternalName", "mullvad-wireguard.sys"
       VALUE "LegalCopyright", "Copyright \xa9 2015-2021 WireGuard LLC. All Rights Reserved."
-      VALUE "OriginalFilename", "wireguard.sys"
+      VALUE "OriginalFilename", "mullvad-wireguard.sys"
       VALUE "ProductName", "WireGuard Driver"
       VALUE "ProductVersion", EXPAND(WIREGUARD_VERSION)
       VALUE "Comments", "https://www.wireguard.com/"

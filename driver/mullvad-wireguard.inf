@@ -7,7 +7,7 @@ Signature = "$Windows NT$"
 Class = Net
 ClassGUID = {4D36E972-E325-11CE-BFC1-08002BE10318}
 Provider = %WireGuard.CompanyName%
-CatalogFile.NT = wireguard.cat
+CatalogFile.NT = mullvad-wireguard.cat
 PnpLockDown = 1
 
 [Manufacturer]
@@ -17,17 +17,17 @@ PnpLockDown = 1
 1 = %WireGuard.DiskDesc%, "", ,
 
 [SourceDisksFiles]
-wireguard.sys = 1
+mullvad-wireguard.sys = 1
 
 [DestinationDirs]
 DefaultDestDir = 12
 WireGuard.CopyFiles.Sys = 12
 
 [WireGuard.CopyFiles.Sys]
-wireguard.sys, , , 0x00004002 ; COPYFLG_IN_USE_RENAME | COPYFLG_NOSKIP
+mullvad-wireguard.sys, , , 0x00004002 ; COPYFLG_IN_USE_RENAME | COPYFLG_NOSKIP
 
-[WireGuard.NT$ARCH$]
-%WireGuard.DeviceDesc% = WireGuard.Install, WireGuard
+[MullvadWireGuard.NT$ARCH$]
+%WireGuard.DeviceDesc% = WireGuard.Install, MullvadWireGuard
 
 [WireGuard.Install]
 Characteristics = 0x1 ; NCF_VIRTUAL
@@ -40,15 +40,15 @@ CopyFiles = WireGuard.CopyFiles.Sys
 EnableDhcp = 0 ; Disable DHCP
 
 [WireGuard.Properties]
-DeviceIcon,,,,"%12%\wireguard.sys,-7"
-DeviceBrandingIcon,,,,"%12%\wireguard.sys,-7"
+DeviceIcon,,,,"%12%\mullvad-wireguard.sys,-7"
+DeviceBrandingIcon,,,,"%12%\mullvad-wireguard.sys,-7"
 DeviceVendorWebsite,,,,"https://www.wireguard.com/"
 
 [WireGuard.Install.Services]
-AddService = WireGuard, 2, WireGuard.Service, WireGuard.EventLog ; 2=SPSVCINST_ASSOCSERVICE
+AddService = MullvadWireGuard, 2, WireGuard.Service, WireGuard.EventLog ; 2=SPSVCINST_ASSOCSERVICE
 
 [WireGuard.Ndi]
-HKR, Ndi, Service, 0, WireGuard
+HKR, Ndi, Service, 0, MullvadWireGuard
 HKR, Ndi\Interfaces, UpperRange, , "ndis5"
 HKR, Ndi\Interfaces, LowerRange, , "nolower"
 
@@ -58,14 +58,14 @@ Description = %WireGuard.DeviceDesc%
 ServiceType = 1 ; SERVICE_KERNEL_DRIVER
 StartType = 3 ; SERVICE_DEMAND_START
 ErrorControl = 1 ; SERVICE_ERROR_NORMAL
-ServiceBinary = %12%\wireguard.sys
+ServiceBinary = %12%\mullvad-wireguard.sys
 
 [WireGuard.EventLog]
-HKR, , EventMessageFile, 0x00020000, "%11%\IoLogMsg.dll;%12%\wireguard.sys"
+HKR, , EventMessageFile, 0x00020000, "%11%\IoLogMsg.dll;%12%\mullvad-wireguard.sys"
 HKR, , TypesSupported, 0x00010001, 7
 
 [Strings]
-WireGuard.Name = "WireGuard"
+WireGuard.Name = "MullvadWireGuard"
 WireGuard.DiskDesc = "WireGuard Driver Install Disk"
-WireGuard.DeviceDesc = "WireGuard Tunnel"
-WireGuard.CompanyName = "WireGuard LLC"
+WireGuard.DeviceDesc = "Mullvad WireGuard Tunnel"
+WireGuard.CompanyName = "Mullvad AB/WireGuard LLC"

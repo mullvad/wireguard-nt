@@ -1,4 +1,4 @@
-LIBRARY wireguard.dll
+LIBRARY mullvad-wireguard.dll
 EXPORTS
 	WireGuardCreateAdapter
 	WireGuardOpenAdapter

@@ -91,7 +91,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="wireguard.inf">
+    <Inf Include="mullvad-wireguard.inf">
       <Filter>Source Files</Filter>
     </Inf>
   </ItemGroup>

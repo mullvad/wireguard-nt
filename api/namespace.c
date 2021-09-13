@@ -37,7 +37,7 @@ BOOL NamespaceRuntimeInit(VOID)
         goto cleanupLeaveCriticalSection;
     }
 
-    BoundaryDescriptor = CreateBoundaryDescriptorW(L"WireGuard", 0);
+    BoundaryDescriptor = CreateBoundaryDescriptorW(L"MullvadWireGuard", 0);
     if (!BoundaryDescriptor)
     {
         LastError = LOG_LAST_ERROR(L"Failed to create boundary descriptor");
@@ -51,11 +51,11 @@ BOOL NamespaceRuntimeInit(VOID)
 
     for (;;)
     {
-        if ((PrivateNamespace = CreatePrivateNamespaceW(&SecurityAttributes, BoundaryDescriptor, L"WireGuard")) != NULL)
+        if ((PrivateNamespace = CreatePrivateNamespaceW(&SecurityAttributes, BoundaryDescriptor, L"MullvadWireGuard")) != NULL)
             break;
         if ((LastError = GetLastError()) == ERROR_ALREADY_EXISTS)
         {
-            if ((PrivateNamespace = OpenPrivateNamespaceW(BoundaryDescriptor, L"WireGuard")) != NULL)
+            if ((PrivateNamespace = OpenPrivateNamespaceW(BoundaryDescriptor, L"MullvadWireGuard")) != NULL)
                 break;
             if ((LastError = GetLastError()) == ERROR_PATH_NOT_FOUND)
                 continue;
@@ -83,7 +83,7 @@ NamespaceTakeDriverInstallationMutex(VOID)
 {
     if (!NamespaceRuntimeInit())
         return NULL;
-    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"WireGuard\\WireGuard-Driver-Installation-Mutex");
+    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"MullvadWireGuard\\WireGuard-Driver-Installation-Mutex");
     if (!Mutex)
     {
         LOG_LAST_ERROR(L"Failed to create mutex");
@@ -108,7 +108,7 @@ NamespaceTakeDeviceInstallationMutex(VOID)
 {
     if (!NamespaceRuntimeInit())
         return NULL;
-    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"WireGuard\\WireGuard-Device-Installation-Mutex");
+    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"MullvadWireGuard\\WireGuard-Device-Installation-Mutex");
     if (!Mutex)
     {
         LOG_LAST_ERROR(L"Failed to create mutex");
