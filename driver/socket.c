@@ -184,10 +184,10 @@ SocketResolvePeerEndpoint(_Inout_ WG_PEER *Peer, _Out_ _At_(*Irql, _IRQL_saves_)
 retryWhileHoldingSharedLock:
     if ((Peer->Endpoint.Addr.si_family == AF_INET &&
          Peer->Endpoint.RoutingGeneration == (UINT32)ReadNoFence(&RoutingGenerationV4) &&
-         Peer->Endpoint.Src4.ipi_ifindex && Peer->Endpoint.Src4.ipi_ifindex != Peer->Device->InterfaceIndex) ||
+         Peer->Endpoint.Src4.ipi_ifindex) ||
         (Peer->Endpoint.Addr.si_family == AF_INET6 &&
          Peer->Endpoint.RoutingGeneration == (UINT32)ReadNoFence(&RoutingGenerationV6) &&
-         Peer->Endpoint.Src6.ipi6_ifindex && Peer->Endpoint.Src6.ipi6_ifindex != Peer->Device->InterfaceIndex))
+         Peer->Endpoint.Src6.ipi6_ifindex))
         return STATUS_SUCCESS;
 
     SOCKADDR_INET Addr;
@@ -210,7 +210,8 @@ retryWhileHoldingSharedLock:
         return STATUS_INSUFFICIENT_RESOURCES;
     for (ULONG i = 0; i < Table->NumEntries; ++i)
     {
-        if (Table->Table[i].InterfaceLuid.Value == Peer->Device->InterfaceLuid.Value)
+        if (Table->Table[i].InterfaceLuid.Value == Peer->Device->InterfaceLuid.Value &&
+            Table->Table[i].DestinationPrefix.PrefixLength == 0)
             continue;
         if (Table->Table[i].DestinationPrefix.PrefixLength < BestCidr)
             continue;
@@ -452,9 +453,6 @@ SocketSendBufferAsReplyToNbl(WG_DEVICE *Wg, CONST NET_BUFFER_LIST *InNbl, CONST 
     if (!NT_SUCCESS(Status))
         goto cleanupMdl;
     Status = STATUS_BAD_NETWORK_PATH;
-    if ((Endpoint.Addr.si_family == AF_INET && Endpoint.Src4.ipi_ifindex == Wg->InterfaceIndex) ||
-        (Endpoint.Addr.si_family == AF_INET6 && Endpoint.Src6.ipi6_ifindex == Wg->InterfaceIndex))
-        goto cleanupMdl;
     KIRQL Irql = RcuReadLock();
     SOCKET *Socket = NULL;
     if (Endpoint.Addr.si_family == AF_INET)
@@ -600,7 +598,6 @@ SocketSetPeerEndpoint(WG_PEER *Peer, CONST ENDPOINT *Endpoint)
     if (Endpoint->Addr.si_family == AF_INET)
     {
         Peer->Endpoint.Addr.Ipv4 = Endpoint->Addr.Ipv4;
-        if (Endpoint->Src4.ipi_ifindex != Peer->Device->InterfaceIndex)
         {
             Peer->Endpoint.Cmsg = Endpoint->Cmsg;
             Peer->Endpoint.Src4 = Endpoint->Src4;
@@ -610,7 +607,6 @@ SocketSetPeerEndpoint(WG_PEER *Peer, CONST ENDPOINT *Endpoint)
     else if (Endpoint->Addr.si_family == AF_INET6)
     {
         Peer->Endpoint.Addr.Ipv6 = Endpoint->Addr.Ipv6;
-        if (Endpoint->Src6.ipi6_ifindex != Peer->Device->InterfaceIndex)
         {
             Peer->Endpoint.Cmsg = Endpoint->Cmsg;
             Peer->Endpoint.Src6 = Endpoint->Src6;
