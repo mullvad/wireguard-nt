@@ -72,7 +72,7 @@ BOOL NamespaceRuntimeInit(VOID)
         goto cleanupBCryptCloseAlgorithmProvider;
     }
 
-    BoundaryDescriptor = CreateBoundaryDescriptorW(L"WireGuard", 0);
+    BoundaryDescriptor = CreateBoundaryDescriptorW(L"MullvadWireGuard", 0);
     if (!BoundaryDescriptor)
     {
         LastError = LOG_LAST_ERROR(L"Failed to create boundary descriptor");
@@ -86,11 +86,11 @@ BOOL NamespaceRuntimeInit(VOID)
 
     for (;;)
     {
-        if ((PrivateNamespace = CreatePrivateNamespaceW(&SecurityAttributes, BoundaryDescriptor, L"WireGuard")) != NULL)
+        if ((PrivateNamespace = CreatePrivateNamespaceW(&SecurityAttributes, BoundaryDescriptor, L"MullvadWireGuard")) != NULL)
             break;
         if ((LastError = GetLastError()) == ERROR_ALREADY_EXISTS)
         {
-            if ((PrivateNamespace = OpenPrivateNamespaceW(BoundaryDescriptor, L"WireGuard")) != NULL)
+            if ((PrivateNamespace = OpenPrivateNamespaceW(BoundaryDescriptor, L"MullvadWireGuard")) != NULL)
                 break;
             if ((LastError = GetLastError()) == ERROR_PATH_NOT_FOUND)
                 continue;
@@ -130,7 +130,7 @@ NamespaceTakePoolMutex(LPCWSTR Pool)
         return NULL;
     }
     DWORD LastError;
-    static const WCHAR mutex_label[] = L"WireGuard Adapter Name Mutex Stable Suffix v1 jason@zx2c4.com";
+    static const WCHAR mutex_label[] = L"Mullvad WireGuard Adapter Name Mutex Stable Suffix v1 jason@zx2c4.com";
     if (!BCRYPT_SUCCESS(
             Status = BCryptHashData(Sha256, (PUCHAR)mutex_label, sizeof(mutex_label) /* Including NULL 2 bytes */, 0)))
     {
@@ -158,7 +158,7 @@ NamespaceTakePoolMutex(LPCWSTR Pool)
         LastError = RtlNtStatusToDosError(Status);
         goto cleanupPoolNorm;
     }
-    static const WCHAR MutexNamePrefix[] = L"WireGuard\\WireGuard-Name-Mutex-";
+    static const WCHAR MutexNamePrefix[] = L"MullvadWireGuard\\WireGuard-Name-Mutex-";
     WCHAR MutexName[_countof(MutexNamePrefix) + sizeof(Hash) * 2];
     memcpy(MutexName, MutexNamePrefix, sizeof(MutexNamePrefix));
     for (size_t i = 0; i < sizeof(Hash); ++i)
@@ -195,7 +195,7 @@ NamespaceTakeDriverInstallationMutex(VOID)
 {
     if (!NamespaceRuntimeInit())
         return NULL;
-    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"WireGuard\\WireGuard-Driver-Installation-Mutex");
+    HANDLE Mutex = CreateMutexW(&SecurityAttributes, FALSE, L"MullvadWireGuard\\WireGuard-Driver-Installation-Mutex");
     if (!Mutex)
     {
         LOG_LAST_ERROR(L"Failed to create mutex");

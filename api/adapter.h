@@ -11,7 +11,7 @@
 #include <Windows.h>
 
 #define MAX_INSTANCE_ID MAX_PATH /* TODO: Is MAX_PATH always enough? */
-#define WIREGUARD_HWID L"WireGuard"
+#define WIREGUARD_HWID L"MullvadWireGuard"
 
 /**
  * WireGuard adapter descriptor.
