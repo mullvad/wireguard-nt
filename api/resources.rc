@@ -8,9 +8,9 @@
 
 #pragma code_page(1252)
 
-wireguard.cat RCDATA "driver\\wireguard.cat"
-wireguard.inf RCDATA "driver\\wireguard.inf"
-wireguard.sys RCDATA "driver\\wireguard.sys"
+wireguard.cat RCDATA "..\\..\\bin\\dist\\wireguard.cat"
+wireguard.inf RCDATA "..\\..\\bin\\dist\\wireguard.inf"
+wireguard.sys RCDATA "..\\..\\bin\\dist\\wireguard.sys"
 
 downlevelshim.dll RCDATA "downlevelshim.dll"
 
