@@ -33,11 +33,4 @@ Configure signing in Microsoft partner portal:
     1. Build `api`: `msbuild.exe api\api.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SignMode=Off`
 1. To sign `mullvad-wireguard.dll`, replace `<certificate-sha1-thumbprint>` below and run:
     signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /sha1 "<certificate-sha1-thumbprint>" /v /ac digicert-high-assurance-ev.crt Release\amd64\mullvad-wireguard.dll
-1. Copy `Release\amd64\mullvad-wireguard.dll` to `bin/dist/`.
-
-## Windows 10
-
-1. Open `api\\resources.rc`.
-1. Replace all strings `..\\..\\bin\\dist\\` with `..\\..\\bin\\dist\\win10\\`.
-1. Repeat steps 1-3 under `Building mullvad-wireguard.dll`.
 1. Copy `Release\amd64\mullvad-wireguard.dll` to `bin/dist/win10/`.

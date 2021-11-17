@@ -8,9 +8,9 @@
 
 #pragma code_page(1252)
 
-mullvad-wireguard.cat RCDATA "..\\..\\bin\\dist\\mullvad-wireguard.cat"
-mullvad-wireguard.inf RCDATA "..\\..\\bin\\dist\\mullvad-wireguard.inf"
-mullvad-wireguard.sys RCDATA "..\\..\\bin\\dist\\mullvad-wireguard.sys"
+mullvad-wireguard.cat RCDATA "..\\..\\bin\\dist\\win10\\mullvad-wireguard.cat"
+mullvad-wireguard.inf RCDATA "..\\..\\bin\\dist\\win10\\mullvad-wireguard.inf"
+mullvad-wireguard.sys RCDATA "..\\..\\bin\\dist\\win10\\mullvad-wireguard.sys"
 
 #if defined(WANT_AMD64_WOW64)
 #    if defined(BUILT_AMD64_WOW64)
