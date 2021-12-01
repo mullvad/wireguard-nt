@@ -46,7 +46,6 @@ copy /b %ROOT%Release\amd64\driver\* %ROOT%bin\dist\
 
 ::
 :: Build a CAB file for submission to the MS Hardware Dev Center
-:: The co-installer has to be included (?) because it's referenced in the inf file
 ::
 
 pushd %ROOT%bin\dist\win10
