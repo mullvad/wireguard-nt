@@ -124,6 +124,10 @@ _IRQL_requires_max_(APC_LEVEL)
 VOID
 IoctlDriverEntry(_In_ DRIVER_OBJECT *DriverObject);
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOLEAN
+HasAccess(_In_ ACCESS_MASK DesiredAccess, _In_ KPROCESSOR_MODE AccessMode, _Out_ NTSTATUS *Status);
+
 #endif
 
 #pragma warning(pop)

@@ -84,6 +84,9 @@
     <ClCompile Include="selftest\chacha20poly1305.c">
       <Filter>Source Files\selftest</Filter>
     </ClCompile>
+    <ClCompile Include="daita.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wireguard.rc">
@@ -154,6 +157,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="daita.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="daita_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

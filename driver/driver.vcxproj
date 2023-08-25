@@ -4,7 +4,7 @@
     <ProjectGuid>{8B282C8F-5870-44C3-9A2A-B9091F4E9F68}</ProjectGuid>
     <RootNamespace>driver</RootNamespace>
     <ProjectName>driver</ProjectName>
-    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
@@ -43,6 +43,7 @@
     <ClCompile Include="allowedips.c" />
     <ClCompile Include="cookie.c" />
     <ClCompile Include="crypto.c" />
+    <ClCompile Include="daita.c" />
     <ClCompile Include="device.c" />
     <ClCompile Include="ioctl.c" />
     <ClCompile Include="logging.c" />
@@ -81,6 +82,8 @@
   <ItemGroup>
     <ClInclude Include="allowedips.h" />
     <ClInclude Include="arithmetic.h" />
+    <ClInclude Include="daita.h" />
+    <ClInclude Include="daita_internal.h" />
     <ClInclude Include="interlocked.h" />
     <ClInclude Include="containers.h" />
     <ClInclude Include="cookie.h" />

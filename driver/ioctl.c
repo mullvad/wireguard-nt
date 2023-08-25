@@ -62,8 +62,8 @@ static SECURITY_DESCRIPTOR *DispatchSecurityDescriptor = (SECURITY_DESCRIPTOR *)
     0x00, 0x20, 0x02, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x12, 0x00, 0x00, 0x00
 };
 
-_IRQL_requires_max_(PASSIVE_LEVEL)
-static BOOLEAN
+_Use_decl_annotations_
+BOOLEAN
 HasAccess(_In_ ACCESS_MASK DesiredAccess, _In_ KPROCESSOR_MODE AccessMode, _Out_ NTSTATUS *Status)
 {
     SECURITY_SUBJECT_CONTEXT SubjectContext;

@@ -6,6 +6,7 @@
 #include "interlocked.h"
 #include "containers.h"
 #include "device.h"
+#include "daita_internal.h"
 #include "ioctl.h"
 #include "messages.h"
 #include "peer.h"
@@ -217,6 +218,11 @@ SendNetBufferLists(
             goto cleanupPeer;
         }
 
+        if (ReadBooleanNoFence(&Peer->Device->Daita.Enabled))
+        {
+            DaitaNonpaddingSent(Peer, NET_BUFFER_DATA_LENGTH(Nb));
+        }
+
         KIRQL Irql;
         KeAcquireSpinLock(&Peer->StagedPacketQueue.Lock, &Irql);
         /* If the queue is getting too big, we start removing the oldest packets
@@ -373,6 +379,9 @@ static VOID
 HaltEx(NDIS_HANDLE MiniportAdapterContext, NDIS_HALT_ACTION HaltAction)
 {
     WG_DEVICE *Wg = (WG_DEVICE *)MiniportAdapterContext;
+
+    DaitaClose(Wg);
+
     IoctlHalt(Wg);
     MuAcquirePushLockExclusive(&DeviceListLock);
     RemoveEntryList(&Wg->DeviceList);
@@ -986,6 +995,7 @@ DeviceDriverEntry(DRIVER_OBJECT *DriverObject, UNICODE_STRING *RegistryPath)
     if (!NT_SUCCESS(Status))
         goto cleanupIpInterfaceNotifierBugWorkaround;
     IoctlDriverEntry(DriverObject);
+    DaitaDriverEntry(DriverObject);
     return STATUS_SUCCESS;
 
 cleanupIpInterfaceNotifierBugWorkaround:

@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+#include "../driver/daita.h"
+
 #ifndef ALIGNED
 #    if defined(_MSC_VER)
 #        define ALIGNED(n) __declspec(align(n))
@@ -300,6 +302,49 @@ BOOL(WINAPI WIREGUARD_GET_CONFIGURATION_FUNC)
 (_In_ WIREGUARD_ADAPTER_HANDLE Adapter,
  _Out_writes_bytes_all_(*Bytes) WIREGUARD_INTERFACE *Config,
  _Inout_ DWORD *Bytes);
+
+/**
+ * Enable DAITA for the given WireGuard device.
+ *
+ * @param Adapter            Adapter handle obtained with WireGuardCreateAdapter or WireGuardOpenAdapter
+ *
+ * @param EventsCapacity     Maximum number of events to store in the internal buffer.
+ *
+ * @param ActionsCapacity    Maximum number of actions to store in the internal buffer.
+ */
+typedef _Must_inspect_result_
+_Return_type_success_(return != FALSE)
+BOOL(WINAPI WIREGUARD_DAITA_ACTIVATE_FUNC)(_In_ WIREGUARD_ADAPTER_HANDLE Adapter, SIZE_T EventsCapacity, SIZE_T ActionsCapacity);
+
+/**
+ * Event object that is signaled when there are DAITA events to receive using WireGuardDaitaReceiveEvents.
+ */
+typedef _Must_inspect_result_
+_Return_type_success_(return != NULL)
+_Post_maybenull_
+HANDLE(WINAPI WIREGUARD_DAITA_EVENT_DATA_AVAILABLE_FUNC)(_In_ WIREGUARD_ADAPTER_HANDLE Adapter);
+
+/**
+ * Retrieves DAITA events.
+ *
+ * @param Events    A buffer that can contain DAITA_EVENT_BUFFER_CAPACITY events (DAITA_EVENT_RING_BUFFER_SIZE bytes).
+ *
+ * @return The function returns the number of events read into Events. If an error occurs, the return value
+ *         is zero and GetLastError returns the last error. If there are no items to read,
+ *         GetLastError returns ERROR_NO_MORE_ITEMS.
+ */
+typedef _Must_inspect_result_
+SIZE_T(WINAPI WIREGUARD_DAITA_RECEIVE_EVENTS_FUNC)
+(_In_ WIREGUARD_ADAPTER_HANDLE Adapter, _Inout_ DAITA_EVENT *Events);
+
+/* Sends a DAITA action.
+ *
+ * @return Iff the function succeeds, the return value is nonzero. To get extended error information, call GetLastError.
+ *         GetLastError returns ERROR_INSUFFICIENT_BUFFER is the underlying buffer is full.
+ */
+typedef _Must_inspect_result_
+_Return_type_success_(return != FALSE)
+BOOL(WINAPI WIREGUARD_DAITA_SEND_ACTION_FUNC)(_In_ WIREGUARD_ADAPTER_HANDLE Adapter, _In_ const DAITA_ACTION *Action);
 
 #pragma warning(pop)
 

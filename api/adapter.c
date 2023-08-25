@@ -190,6 +190,7 @@ WireGuardCloseAdapter(WIREGUARD_ADAPTER *Adapter)
 {
     if (!Adapter)
         return;
+    FreeDaitaSession(Adapter->DaitaSession);
     WireGuardSetAdapterLogging(Adapter, WIREGUARD_ADAPTER_LOG_OFF);
     Free(Adapter->InterfaceFilename);
     if (Adapter->SwDevice)

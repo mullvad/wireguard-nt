@@ -8,6 +8,7 @@
 #include "allowedips.h"
 #include "containers.h"
 #include "cookie.h"
+#include "daita_internal.h"
 #include "noise.h"
 #include "peerlookup.h"
 #include "rcu.h"
@@ -94,6 +95,7 @@ typedef struct _WG_DEVICE
     LOG_RING Log;
     LIST_ENTRY DeviceList;
     KEVENT DeviceRemoved;
+    DAITA_SESSION_INTERNAL Daita;
 } WG_DEVICE;
 
 _Requires_lock_held_(Wg->DeviceUpdateLock)
