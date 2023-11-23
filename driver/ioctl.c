@@ -148,6 +148,7 @@ Get(_In_ DEVICE_OBJECT *DeviceObject, _Inout_ IRP *Irp)
             IoctlPeer->TxBytes = Peer->TxBytes;
             IoctlPeer->LastHandshake = Peer->WalltimeLastHandshake.QuadPart;
             IoctlPeer->AllowedIPsCount = 0;
+            IoctlPeer->MinPacketSize = Peer->MinPacketSize;
             MuAcquirePushLockShared(&Peer->Handshake.Lock);
             RtlCopyMemory(IoctlPeer->PublicKey, Peer->Handshake.RemoteStatic, NOISE_PUBLIC_KEY_LEN);
             IoctlPeer->Flags |= WG_IOCTL_PEER_HAS_PUBLIC_KEY;
@@ -366,6 +367,8 @@ SetPeer(_Inout_ WG_DEVICE *Wg, _Inout_ CONST volatile WG_IOCTL_PEER **UnsafeIoct
         if (!NT_SUCCESS(Status))
             goto cleanupPeer;
     }
+
+    WriteUShortRelease(&Peer->MinPacketSize, IoctlPeer.MinPacketSize);
 
     BOOLEAN IsUp = ReadBooleanNoFence(&Wg->IsUp);
     if (IoctlPeer.Flags & WG_IOCTL_PEER_HAS_PERSISTENT_KEEPALIVE)

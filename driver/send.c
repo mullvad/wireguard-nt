@@ -181,13 +181,32 @@ EncryptPacket(
     _Inout_ NET_BUFFER *NbOut,
     _Inout_ NET_BUFFER *NbIn,
     _In_ CONST NOISE_KEYPAIR *Keypair,
-    _In_ UINT32 Mtu)
+    _In_ ULONG Mtu,
+    _In_ UINT16 MinPacketSize)
 {
-    ULONG PaddingLen = CalculateNblPadding(NbIn, Mtu);
     UCHAR *OutBuffer = MemGetValidatedNetBufferData(NbOut);
     *(MESSAGE_DATA *)OutBuffer = (MESSAGE_DATA){ .Header.Type = CpuToLe32(MESSAGE_TYPE_DATA),
                                                  .KeyIdx = Keypair->RemoteIndex,
                                                  .Counter = CpuToLe64(NET_BUFFER_NONCE(NbOut)) };
+    ULONG PaddingLen;
+
+    if (MinPacketSize > 0 && NET_BUFFER_DATA_LENGTH(NbIn) < MinPacketSize)
+    {
+        DWORD LastUnit = NET_BUFFER_DATA_LENGTH(NbIn);
+        ULONG NewLength = ALIGN_UP_BY_T(ULONG, MinPacketSize, MESSAGE_PADDING_MULTIPLE);
+        if (Mtu)
+        {
+            if (LastUnit > Mtu)
+                LastUnit %= Mtu;
+            NewLength = min(Mtu, NewLength);
+        }
+        PaddingLen = NewLength - LastUnit;
+    }
+    else
+    {
+        PaddingLen = CalculateNblPadding(NbIn, Mtu);
+    }
+
     OutBuffer += sizeof(MESSAGE_DATA);
 
     MDL *LastMdl = NULL, *OriginalNextMdl = NULL, PaddingMdl = { 0 };
@@ -208,7 +227,7 @@ EncryptPacket(
         OriginalMdlLen = MmGetMdlByteCount(LastMdl);
         OriginalNextMdl = LastMdl->Next;
         /* This MDL is completely bogus, but hopefully is sufficient for just returning MappedSystemVa. */
-        static CONST UCHAR Padding[MESSAGE_PADDING_MULTIPLE - 1] = { 0 };
+        static CONST UCHAR Padding[UINT16_MAX] = { 0 };
         PaddingMdl.MappedSystemVa = (PVOID)Padding;
         PaddingMdl.ByteCount = PaddingLen;
 #pragma warning(suppress : 28145) /*  We're modifying MdlFlags manually, but that's the whole point of this hack */
@@ -247,7 +266,7 @@ PacketSendKeepalive(WG_PEER *Peer)
 
     if (NetBufferListIsQueueEmpty(&Peer->StagedPacketQueue))
     {
-        Nbl = MemAllocateNetBufferList(0, 0, sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0));
+        Nbl = MemAllocateNetBufferList(0, 0, sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + Peer->MinPacketSize + MESSAGE_PADDING_MULTIPLE - 1);
         if (!Nbl)
             return;
         Nbl->ParentNetBufferList = Nbl;
@@ -331,6 +350,7 @@ PacketEncryptWorker(MULTICORE_WORKQUEUE *WorkQueue)
         NOISE_KEYPAIR *Keypair = NET_BUFFER_LIST_KEYPAIR(First);
         WG_PEER *Peer = NET_BUFFER_LIST_PEER(First);
         ULONG Mtu = Peer->Endpoint.Addr.si_family == AF_INET6 ? Wg->Mtu6 : Wg->Mtu4;
+        USHORT MinPacketSize = Peer->MinPacketSize;
 
         for (NET_BUFFER_LIST *Nbl = First; Nbl; Nbl = NET_BUFFER_LIST_NEXT_NBL(Nbl))
         {
@@ -339,7 +359,7 @@ PacketEncryptWorker(MULTICORE_WORKQUEUE *WorkQueue)
                  NbIn && NbOut && State == PACKET_STATE_CRYPTED;
                  NbIn = NET_BUFFER_NEXT_NB(NbIn), NbOut = NET_BUFFER_NEXT_NB(NbOut))
             {
-                if (!EncryptPacket(&Simd, NbOut, NbIn, Keypair, Mtu))
+                if (!EncryptPacket(&Simd, NbOut, NbIn, Keypair, Mtu, MinPacketSize))
                     State = PACKET_STATE_DEAD;
             }
             if (Nbl != Nbl->ParentNetBufferList)

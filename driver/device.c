@@ -163,15 +163,6 @@ SendNetBufferLists(
             goto returnNbl;
         }
 
-        NET_BUFFER_LIST *CloneNbl = MemAllocateNetBufferListWithClonedGeometry(
-            Nbl, sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + MESSAGE_PADDING_MULTIPLE - 1);
-        if (!CloneNbl)
-        {
-            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_RESOURCES;
-            goto returnNbl;
-        }
-        Nbl = CloneNbl;
-
         CONST UINT16_BE Protocol = NET_BUFFER_LIST_PROTOCOL(Nbl);
         IPV4HDR *Header4 = NULL;
         IPV6HDR *Header6 = NULL;
@@ -208,6 +199,31 @@ SendNetBufferLists(
             ++Wg->Statistics.ifOutErrors;
             goto returnNbl;
         }
+
+        ULONG AdditionalNbBytes = sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + MESSAGE_PADDING_MULTIPLE - 1;
+        if (Peer->MinPacketSize > 0)
+        {
+            ULONG MinRealSize = ULONG_MAX;
+            for (NET_BUFFER *CurrentNb = Nb; CurrentNb; CurrentNb = NET_BUFFER_NEXT_NB(CurrentNb))
+            {
+                MinRealSize = min(MinRealSize, NET_BUFFER_DATA_LENGTH(CurrentNb));
+            }
+            if (Peer->MinPacketSize > MinRealSize)
+            {
+                /* Allocate extra bytes to each net buffer */
+                /* TODO: Excessive when there are multiple NBs. Can it be done per-NB? */
+                AdditionalNbBytes += Peer->MinPacketSize - MinRealSize;
+            }
+        }
+
+        NET_BUFFER_LIST *CloneNbl = MemAllocateNetBufferListWithClonedGeometry(Nbl, AdditionalNbBytes);
+        if (!CloneNbl)
+        {
+            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_RESOURCES;
+            goto returnNbl;
+        }
+        Nbl = CloneNbl;
+
         ADDRESS_FAMILY Family = ReadUShortNoFence(&Peer->Endpoint.Addr.si_family);
         if (Family != AF_INET && Family != AF_INET6)
         {

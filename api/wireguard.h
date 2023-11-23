@@ -247,6 +247,7 @@ struct ALIGNED(8) _WIREGUARD_PEER
     DWORD64 RxBytes;                         /**< Number of bytes received */
     DWORD64 LastHandshake;                   /**< Time of the last handshake, in 100ns intervals since 1601-01-01 UTC */
     DWORD AllowedIPsCount;                   /**< Number of allowed IP structs following this struct */
+    WORD MinPacketSize;                      /**< Minimum packet size. Smaller packets are padded up to at least this size */
 };
 
 typedef enum

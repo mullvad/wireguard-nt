@@ -57,6 +57,7 @@ typedef __declspec(align(8)) struct _WG_IOCTL_PEER
     ULONG64 RxBytes;
     ULONG64 LastHandshake;
     ULONG AllowedIPsCount;
+    USHORT MinPacketSize;
 } WG_IOCTL_PEER;
 
 typedef enum

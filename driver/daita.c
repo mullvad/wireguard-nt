@@ -116,17 +116,12 @@ DaitaPaddingSent(_In_ WG_PEER *Peer, ULONG Length, SIZE_T UserContext)
     DaitaEmitEvent(Peer, DAITA_EVENT_PADDING_SENT, (USHORT)Length, UserContext);
 }
 
-#define ALIGNED_ENCRYPTED_LEN(PacketLength) \
-    ALIGN_UP_BY_T(ULONG, (PacketLength) + sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0), MESSAGE_PADDING_MULTIPLE)
-
 /* Return whether a packet is already queued. This includes padding packets. */
 _IRQL_requires_max_(DISPATCH_LEVEL)
 _Requires_lock_not_held_(Peer->StagedPacketQueue.Lock)
 static BOOLEAN
-HasPacketQueued(_In_ WG_PEER *Peer, ULONG PacketLength)
+HasPacketQueued(_In_ WG_PEER *Peer, ULONG AlignedLength)
 {
-    ULONG AlignedLength = ALIGNED_ENCRYPTED_LEN(PacketLength);
-
     KIRQL Irql;
     KeAcquireSpinLock(&Peer->StagedPacketQueue.Lock, &Irql);
 
@@ -176,7 +171,12 @@ SendPaddingPacket(_Inout_ WG_PEER *Peer, USHORT PaddingSize, BOOLEAN Replace, SI
         return;
     }
 
-    if (Replace && HasPacketQueued(Peer, PaddingSize))
+    ULONG AlignedCryptPacketSize = ALIGN_UP_BY_T(
+        ULONG,
+        max(Peer->MinPacketSize, PaddingSize + sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0)),
+        MESSAGE_PADDING_MULTIPLE);
+
+    if (Replace && HasPacketQueued(Peer, AlignedCryptPacketSize))
     {
         LogDaitaInfoRatelimited(Peer->Device, "Dropping padding event since there's a packet queued");
 
@@ -185,35 +185,20 @@ SendPaddingPacket(_Inout_ WG_PEER *Peer, USHORT PaddingSize, BOOLEAN Replace, SI
         return;
     }
 
-    PacketSendStagedPackets(Peer);
-
-    NET_BUFFER_LIST *Nbl = MemAllocateNetBufferList(
-        0,
-        PaddingSize,
-        0);
+    NET_BUFFER_LIST *Nbl = MemAllocateNetBufferList(0, AlignedCryptPacketSize, 0);
     if (!Nbl)
+    {
+        LogDaitaWarn(Peer->Device, "Dropping padding packet: could not alloc NBL");
         return;
+    }
 
     /* encrypt workers use the parent buffer list */
     Nbl->ParentNetBufferList = Nbl;
 
-    NET_BUFFER *Nb = NET_BUFFER_LIST_FIRST_NB(Nbl);
-
-    DAITA_PADDING *Padding = (DAITA_PADDING *)MemGetValidatedNetBufferListData(Nbl);
+    DAITA_PADDING *Padding = (DAITA_PADDING *)((BYTE *)MemGetValidatedNetBufferListData(Nbl) + sizeof(MESSAGE_DATA));
     RtlZeroMemory(Padding, PaddingSize);
     Padding->Tag = DAITA_PADDING_TAG;
     Padding->TotalLength = Htons(PaddingSize);
-
-    NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_SUCCESS;
-
-    NET_BUFFER_LIST *CloneNbl = MemAllocateNetBufferListWithClonedGeometry(Nbl, ALIGNED_ENCRYPTED_LEN(PaddingSize));
-    if (!CloneNbl)
-    {
-        LogDaitaWarn(Peer->Device, "Dropping padding packet: could not alloc NBL");
-        goto cleanupNbl;
-    }
-    Nbl = CloneNbl;
-    Nb = NET_BUFFER_LIST_FIRST_NB(Nbl);
 
     NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_SUCCESS;
 
@@ -222,10 +207,6 @@ SendPaddingPacket(_Inout_ WG_PEER *Peer, USHORT PaddingSize, BOOLEAN Replace, SI
     DaitaPaddingSent(Peer, PaddingSize, UserContext);
 
     PacketSendStagedPackets(Peer);
-    return;
-
-cleanupNbl:
-    MemFreeNetBufferList(Nbl);
 }
 
 _IRQL_requires_max_(PASSIVE_LEVEL)

@@ -108,6 +108,12 @@ static_assert(
 static_assert(
     RTL_FIELD_SIZE(WG_IOCTL_PEER, AllowedIPsCount) == RTL_FIELD_SIZE(WIREGUARD_PEER, AllowedIPsCount),
     "Peer->AllowedIPsCount struct mismatch");
+static_assert(
+    offsetof(WG_IOCTL_PEER, MinPacketSize) == offsetof(WIREGUARD_PEER, MinPacketSize),
+    "Peer->MinPacketSize struct mismatch");
+static_assert(
+    RTL_FIELD_SIZE(WG_IOCTL_PEER, MinPacketSize) == RTL_FIELD_SIZE(WIREGUARD_PEER, MinPacketSize),
+    "Peer->MinPacketSize struct mismatch");
 static_assert(WG_IOCTL_PEER_HAS_PUBLIC_KEY == WIREGUARD_PEER_HAS_PUBLIC_KEY, "PEER_HAS_PUBLIC_KEY flag mismatch");
 static_assert(
     WG_IOCTL_PEER_HAS_PRESHARED_KEY == WIREGUARD_PEER_HAS_PRESHARED_KEY,
