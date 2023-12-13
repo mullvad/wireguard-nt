@@ -192,7 +192,7 @@ SendPaddingPacket(_Inout_ WG_PEER *Peer, USHORT PaddingSize, BOOLEAN Replace, SI
         return;
     }
 
-    /* encrypt workers use the parent buffer list */
+    /* use same NBL for encrypted output */
     Nbl->ParentNetBufferList = Nbl;
 
     DAITA_PADDING *Padding = (DAITA_PADDING *)((BYTE *)MemGetValidatedNetBufferListData(Nbl) + sizeof(MESSAGE_DATA));
