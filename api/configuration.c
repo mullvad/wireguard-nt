@@ -127,6 +127,7 @@ static_assert(
     "PEER_REPLACE_ALLOWED_IPS flag mismatch");
 static_assert(WG_IOCTL_PEER_REMOVE == WIREGUARD_PEER_REMOVE, "PEER_REMOVE flag mismatch");
 static_assert(WG_IOCTL_PEER_UPDATE == WIREGUARD_PEER_UPDATE, "PEER_UPDATE flag mismatch");
+static_assert(WG_IOCTL_PEER_HAS_MIN_PACKET_SIZE == WIREGUARD_PEER_HAS_MIN_PACKET_SIZE, "PEER_HAS_MIN_PACKET_SIZE flag mismatch");
 static_assert(sizeof(WG_IOCTL_ALLOWED_IP) == sizeof(WIREGUARD_ALLOWED_IP), "Allowed IP struct mismatch");
 static_assert(
     offsetof(WG_IOCTL_ALLOWED_IP, AddressFamily) == offsetof(WIREGUARD_ALLOWED_IP, AddressFamily),
