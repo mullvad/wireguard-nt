@@ -200,19 +200,30 @@ SendNetBufferLists(
             goto returnNbl;
         }
 
+        ADDRESS_FAMILY Family = ReadUShortNoFence(&Peer->Endpoint.Addr.si_family);
+        if (Family != AF_INET && Family != AF_INET6)
+        {
+            LogInfoRatelimited(
+                Wg, "No valid endpoint has been configured or discovered for peer %llu", Peer->InternalId);
+            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_FAILURE;
+            ++Wg->Statistics.ifOutErrors;
+            goto cleanupPeer;
+        }
+
         ULONG AdditionalNbBytes = sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + MESSAGE_PADDING_MULTIPLE - 1;
-        if (Peer->MinPacketSize > 0)
+        if (Peer->ConstantPacketSize)
         {
             ULONG MinRealSize = ULONG_MAX;
             for (NET_BUFFER *CurrentNb = Nb; CurrentNb; CurrentNb = NET_BUFFER_NEXT_NB(CurrentNb))
             {
                 MinRealSize = min(MinRealSize, NET_BUFFER_DATA_LENGTH(CurrentNb));
             }
-            if (Peer->MinPacketSize > MinRealSize)
+            ULONG Mtu = Family == AF_INET ? Peer->Device->Mtu4 : Peer->Device->Mtu6;
+            if (Mtu > MinRealSize)
             {
                 /* Allocate extra bytes to each net buffer */
                 /* TODO: Excessive when there are multiple NBs. Can it be done per-NB? */
-                AdditionalNbBytes += Peer->MinPacketSize - MinRealSize;
+                AdditionalNbBytes += Mtu - MinRealSize;
             }
         }
 
@@ -223,16 +234,6 @@ SendNetBufferLists(
             goto returnNbl;
         }
         Nbl = CloneNbl;
-
-        ADDRESS_FAMILY Family = ReadUShortNoFence(&Peer->Endpoint.Addr.si_family);
-        if (Family != AF_INET && Family != AF_INET6)
-        {
-            LogInfoRatelimited(
-                Wg, "No valid endpoint has been configured or discovered for peer %llu", Peer->InternalId);
-            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_FAILURE;
-            ++Wg->Statistics.ifOutErrors;
-            goto cleanupPeer;
-        }
 
         if (ReadBooleanNoFence(&Peer->Device->Daita.Enabled))
         {

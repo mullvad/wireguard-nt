@@ -109,11 +109,11 @@ static_assert(
     RTL_FIELD_SIZE(WG_IOCTL_PEER, AllowedIPsCount) == RTL_FIELD_SIZE(WIREGUARD_PEER, AllowedIPsCount),
     "Peer->AllowedIPsCount struct mismatch");
 static_assert(
-    offsetof(WG_IOCTL_PEER, MinPacketSize) == offsetof(WIREGUARD_PEER, MinPacketSize),
-    "Peer->MinPacketSize struct mismatch");
+    offsetof(WG_IOCTL_PEER, ConstantPacketSize) == offsetof(WIREGUARD_PEER, ConstantPacketSize),
+    "Peer->ConstantPacketSize struct mismatch");
 static_assert(
-    RTL_FIELD_SIZE(WG_IOCTL_PEER, MinPacketSize) == RTL_FIELD_SIZE(WIREGUARD_PEER, MinPacketSize),
-    "Peer->MinPacketSize struct mismatch");
+    RTL_FIELD_SIZE(WG_IOCTL_PEER, ConstantPacketSize) == RTL_FIELD_SIZE(WIREGUARD_PEER, ConstantPacketSize),
+    "Peer->ConstantPacketSize struct mismatch");
 static_assert(WG_IOCTL_PEER_HAS_PUBLIC_KEY == WIREGUARD_PEER_HAS_PUBLIC_KEY, "PEER_HAS_PUBLIC_KEY flag mismatch");
 static_assert(
     WG_IOCTL_PEER_HAS_PRESHARED_KEY == WIREGUARD_PEER_HAS_PRESHARED_KEY,
@@ -127,7 +127,7 @@ static_assert(
     "PEER_REPLACE_ALLOWED_IPS flag mismatch");
 static_assert(WG_IOCTL_PEER_REMOVE == WIREGUARD_PEER_REMOVE, "PEER_REMOVE flag mismatch");
 static_assert(WG_IOCTL_PEER_UPDATE == WIREGUARD_PEER_UPDATE, "PEER_UPDATE flag mismatch");
-static_assert(WG_IOCTL_PEER_HAS_MIN_PACKET_SIZE == WIREGUARD_PEER_HAS_MIN_PACKET_SIZE, "PEER_HAS_MIN_PACKET_SIZE flag mismatch");
+static_assert(WG_IOCTL_PEER_HAS_CONSTANT_PACKET_SIZE == WIREGUARD_PEER_HAS_CONSTANT_PACKET_SIZE, "PEER_HAS_CONSTANT_PACKET_SIZE flag mismatch");
 static_assert(sizeof(WG_IOCTL_ALLOWED_IP) == sizeof(WIREGUARD_ALLOWED_IP), "Allowed IP struct mismatch");
 static_assert(
     offsetof(WG_IOCTL_ALLOWED_IP, AddressFamily) == offsetof(WIREGUARD_ALLOWED_IP, AddressFamily),

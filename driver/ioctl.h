@@ -43,7 +43,7 @@ typedef enum
     WG_IOCTL_PEER_REPLACE_ALLOWED_IPS = 1 << 5,
     WG_IOCTL_PEER_REMOVE = 1 << 6,
     WG_IOCTL_PEER_UPDATE = 1 << 7,
-    WG_IOCTL_PEER_HAS_MIN_PACKET_SIZE = 1 << 8
+    WG_IOCTL_PEER_HAS_CONSTANT_PACKET_SIZE = 1 << 8
 } WG_IOCTL_PEER_FLAG;
 
 typedef __declspec(align(8)) struct _WG_IOCTL_PEER
@@ -58,7 +58,7 @@ typedef __declspec(align(8)) struct _WG_IOCTL_PEER
     ULONG64 RxBytes;
     ULONG64 LastHandshake;
     ULONG AllowedIPsCount;
-    USHORT MinPacketSize;
+    BOOLEAN ConstantPacketSize;
 } WG_IOCTL_PEER;
 
 typedef enum

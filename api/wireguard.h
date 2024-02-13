@@ -232,7 +232,7 @@ typedef enum
     WIREGUARD_PEER_REPLACE_ALLOWED_IPS = 1 << 5,      /**< Remove all allowed IPs before adding new ones */
     WIREGUARD_PEER_REMOVE = 1 << 6,                   /**< Remove specified peer */
     WIREGUARD_PEER_UPDATE = 1 << 7,                   /**< Do not add a new peer */
-    WIREGUARD_PEER_HAS_MIN_PACKET_SIZE = 1 << 8       /**< The MinPacketSize field is set */
+    WIREGUARD_PEER_HAS_CONSTANT_PACKET_SIZE = 1 << 8  /**< The ConstantPacketSize field is set */
 } WIREGUARD_PEER_FLAG;
 
 typedef struct _WIREGUARD_PEER WIREGUARD_PEER;
@@ -248,7 +248,7 @@ struct ALIGNED(8) _WIREGUARD_PEER
     DWORD64 RxBytes;                         /**< Number of bytes received */
     DWORD64 LastHandshake;                   /**< Time of the last handshake, in 100ns intervals since 1601-01-01 UTC */
     DWORD AllowedIPsCount;                   /**< Number of allowed IP structs following this struct */
-    WORD MinPacketSize;                      /**< Minimum packet size. Smaller packets are padded up to at least this size */
+    BOOLEAN ConstantPacketSize;              /**< Constant packet size. Smaller packets are padded up to the MTU */
 };
 
 typedef enum

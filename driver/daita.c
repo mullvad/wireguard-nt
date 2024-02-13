@@ -120,7 +120,7 @@ DaitaPaddingSent(_In_ WG_PEER *Peer, ULONG Length, SIZE_T UserContext)
 _IRQL_requires_max_(DISPATCH_LEVEL)
 _Requires_lock_not_held_(Peer->StagedPacketQueue.Lock)
 static BOOLEAN
-HasPacketQueued(_In_ WG_PEER *Peer, ULONG Length)
+HasPacketQueued(_In_ WG_PEER *Peer, ULONG HeaderLength)
 {
     KIRQL Irql;
     KeAcquireSpinLock(&Peer->StagedPacketQueue.Lock, &Irql);
@@ -130,10 +130,6 @@ HasPacketQueued(_In_ WG_PEER *Peer, ULONG Length)
         for (NET_BUFFER *NbIn = NET_BUFFER_LIST_FIRST_NB(Nbl->ParentNetBufferList); NbIn;
              NbIn = NET_BUFFER_NEXT_NB(NbIn))
         {
-            if (NET_BUFFER_DATA_LENGTH(NbIn) == Length)
-            {
-                goto foundPacket;
-            }
             if (Nbl != Nbl->ParentNetBufferList)
             {
                 continue;
@@ -144,7 +140,7 @@ HasPacketQueued(_In_ WG_PEER *Peer, ULONG Length)
             {
                 DAITA_PADDING *Padding =
                     (DAITA_PADDING *)((BYTE *)MemGetValidatedNetBufferData(NbIn) + sizeof(MESSAGE_DATA));
-                if (Padding->Tag == DAITA_PADDING_TAG && Ntohs(Padding->TotalLength) == Length)
+                if (Padding->Tag == DAITA_PADDING_TAG && Ntohs(Padding->TotalLength) == HeaderLength)
                 {
                     goto foundPacket;
                 }
@@ -199,12 +195,8 @@ SendPaddingPacket(_Inout_ WG_PEER *Peer, USHORT PaddingSize, BOOLEAN Replace, SI
         return;
     }
 
-    ULONG AlignedCryptPacketSize = ALIGN_UP_BY_T(
-        ULONG,
-        max(Peer->MinPacketSize, PaddingSize + sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0)),
-        MESSAGE_PADDING_MULTIPLE);
-
-    NET_BUFFER_LIST *Nbl = MemAllocateNetBufferList(0, AlignedCryptPacketSize, 0);
+    ULONG ActualPaddingSize = Peer->ConstantPacketSize ? Mtu : PaddingSize;
+    NET_BUFFER_LIST *Nbl = MemAllocateNetBufferList(sizeof(MESSAGE_DATA), ActualPaddingSize, NoiseEncryptedLen(0));
     if (!Nbl)
     {
         LogDaitaWarn(Peer->Device, "Dropping padding packet: could not alloc NBL");
