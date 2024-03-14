@@ -193,9 +193,8 @@ EncryptPacket(
     if (ConstantPacketSize && Mtu >= NET_BUFFER_DATA_LENGTH(NbIn))
     {
         ULONG OutCapacity = MmGetMdlByteCount(NET_BUFFER_CURRENT_MDL(NbOut));
-        ULONG RequiredCapacity = MessageDataLen(NET_BUFFER_DATA_LENGTH(NbIn));
 
-        NT_ASSERT(OutCapacity >= RequiredCapacity);
+        NT_ASSERT(OutCapacity >= MessageDataLen(NET_BUFFER_DATA_LENGTH(NbIn)));
 
         ULONG TargetLen = Mtu;
         if (MessageDataLen(Mtu) > OutCapacity)
