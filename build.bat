@@ -6,9 +6,10 @@ if [%VisualStudioVersion%]==[] (
 )
 
 if [%1]==[] goto USAGE
+if [%2]==[] goto USAGE
 
 set CERT_THUMBPRINT=%1
-set CROSSCERT=digicert-high-assurance-ev.crt
+set CROSSCERT=%2
 set TIMESTAMP_SERVER=http://timestamp.digicert.com
 
 set ROOT=%~dp0
@@ -66,7 +67,7 @@ exit /b 0
 
 :USAGE
 
-echo Usage: %0 ^<cert_sha1_hash^>
+echo Usage: %0 ^<cert_sha1_hash^> ^<cert_root_ca_path^>
 exit /b 1
 
 :ERROR
