@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#include "../driver/daita.h"
-
 #ifndef ALIGNED
 #    if defined(_MSC_VER)
 #        define ALIGNED(n) __declspec(align(n))
@@ -304,6 +302,13 @@ BOOL(WINAPI WIREGUARD_GET_CONFIGURATION_FUNC)
 (_In_ WIREGUARD_ADAPTER_HANDLE Adapter,
  _Out_writes_bytes_all_(*Bytes) WIREGUARD_INTERFACE *Config,
  _Inout_ DWORD *Bytes);
+
+/* Forward declare types defined in daita.h */
+struct _DAITA_ACTION;
+typedef struct _DAITA_ACTION DAITA_ACTION;
+
+struct _DAITA_EVENT;
+typedef struct _DAITA_EVENT DAITA_EVENT;
 
 /**
  * Enable DAITA for the given WireGuard device.

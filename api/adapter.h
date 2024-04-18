@@ -18,6 +18,9 @@ extern const DEVPROPKEY DEVPKEY_WireGuard_Name;
 
 typedef struct HSWDEVICE__ *HSWDEVICE;
 
+struct _DAITA_SESSION;
+typedef struct _DAITA_SESSION DAITA_SESSION;
+
 /**
  * WireGuard adapter descriptor.
  */
