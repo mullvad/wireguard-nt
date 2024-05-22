@@ -11,7 +11,7 @@
 #include "queueing.h"
 #include <ntddk.h>
 
-static DRIVER_DISPATCH *NdisDispatchDeviceControl, *NdisDispatchPnp;
+static DRIVER_DISPATCH *NdisDispatchDeviceControl;
 
 static inline VOID
 CopyPubkey(
@@ -523,27 +523,6 @@ DaitaClose(_Inout_ WG_DEVICE *Wg)
     RtlZeroMemory(&Wg->Daita, sizeof(Wg->Daita));
 }
 
-_Dispatch_type_(IRP_MJ_PNP)
-static DRIVER_DISPATCH_PAGED DispatchPnp;
-_Use_decl_annotations_
-static NTSTATUS
-DispatchPnp(DEVICE_OBJECT *DeviceObject, IRP *Irp)
-{
-    IO_STACK_LOCATION *Stack = IoGetCurrentIrpStackLocation(Irp);
-    if (Stack->MinorFunction != IRP_MN_QUERY_REMOVE_DEVICE && Stack->MinorFunction != IRP_MN_SURPRISE_REMOVAL)
-        goto ndisDispatch;
-
-    WG_DEVICE *Wg = DeviceObject->Reserved;
-    if (!Wg)
-        goto ndisDispatch;
-
-    DaitaClose(Wg);
-    /* intentional fall-through */
-
-ndisDispatch:
-    return NdisDispatchPnp(DeviceObject, Irp);
-}
-
 #ifdef ALLOC_PRAGMA
 #    pragma alloc_text(INIT, DaitaDriverEntry)
 #endif
@@ -552,7 +531,5 @@ VOID
 DaitaDriverEntry(DRIVER_OBJECT *DriverObject)
 {
     NdisDispatchDeviceControl = DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL];
-    NdisDispatchPnp = DriverObject->MajorFunction[IRP_MJ_PNP];
     DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DispatchDeviceControl;
-    DriverObject->MajorFunction[IRP_MJ_PNP] = DispatchPnp;
 }
