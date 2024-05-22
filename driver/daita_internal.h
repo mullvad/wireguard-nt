@@ -124,6 +124,8 @@ _IRQL_requires_max_(DISPATCH_LEVEL)
 VOID
 DaitaPaddingReceived(_In_ WG_PEER *Peer, ULONG Length);
 
+_Requires_lock_not_held_(Wg->Daita.Event.Lock)
+_IRQL_requires_max_(DISPATCH_LEVEL)
 VOID
 DaitaClose(_Inout_ WG_DEVICE *Wg);
 

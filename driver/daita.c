@@ -47,10 +47,16 @@ DaitaEmitEvent(
 
     DAITA_SESSION_INTERNAL *Daita = &Peer->Device->Daita;
 
-    ULONG ReadOffset = ReadULongAcquire(&Daita->Event.Ring->ReadOffset) % Daita->Event.Capacity;
-
     KIRQL OldIrql;
     KeAcquireSpinLock(&Daita->Event.Lock, &OldIrql);
+
+    /* Check enabled state again while holding event lock, as the memory might be unlocked/invalidated */
+    if (!ReadBooleanNoFence(&Peer->Device->Daita.Enabled))
+    {
+        goto releaseLock;
+    }
+
+    ULONG ReadOffset = ReadULongAcquire(&Daita->Event.Ring->ReadOffset) % Daita->Event.Capacity;
 
     ULONG WriteOffset = ReadULongAcquire(&Daita->Event.WriteOffset);
     ULONG NewWriteOffset = (WriteOffset + 1) % Daita->Event.Capacity;
@@ -72,9 +78,13 @@ DaitaEmitEvent(
     /* Bump shared write pointer and signal write event */
     WriteULongRelease(&Daita->Event.Ring->WriteOffset, NewWriteOffset);
 
-    KeReleaseSpinLock(&Daita->Event.Lock, OldIrql);
-
     KeSetEvent(Daita->Event.DataAvailable, IO_NETWORK_INCREMENT, FALSE);
+
+    /* fall-through */
+
+releaseLock:
+
+    KeReleaseSpinLock(&Daita->Event.Lock, OldIrql);
     return;
 
 releaseLockFull:
@@ -492,6 +502,7 @@ DispatchDeviceControl(DEVICE_OBJECT *DeviceObject, IRP *Irp)
     return Status;
 }
 
+_Use_decl_annotations_
 VOID
 DaitaClose(_Inout_ WG_DEVICE *Wg)
 {
@@ -511,15 +522,24 @@ DaitaClose(_Inout_ WG_DEVICE *Wg)
     }
     ZwClose(Wg->Daita.Action.HandlerThread);
 
+    /* No lock is needed because the action thread is stopped */
     MmUnlockPages(Wg->Daita.Action.Mdl);
     IoFreeMdl(Wg->Daita.Action.Mdl);
     ObDereferenceObject(Wg->Daita.Action.DataAvailable);
 
+    /* Acquire event lock in case we're in the middle of handling an event */
+    KIRQL OldIrql;
+    KeAcquireSpinLock(&Wg->Daita.Event.Lock, &OldIrql);
+
     MmUnlockPages(Wg->Daita.Event.Mdl);
     IoFreeMdl(Wg->Daita.Event.Mdl);
+
     ObDereferenceObject(Wg->Daita.Event.DataAvailable);
 
     WriteBooleanNoFence(&Wg->Daita.Enabled, FALSE);
+
+    KeReleaseSpinLock(&Wg->Daita.Event.Lock, OldIrql);
+
     RtlZeroMemory(&Wg->Daita, sizeof(Wg->Daita));
 }
 
