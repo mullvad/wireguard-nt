@@ -305,7 +305,7 @@ DaitaActivate(_In_ DEVICE_OBJECT *DeviceObject, _Inout_ IRP *Irp)
 
     Irp->IoStatus.Information = 0;
 
-    if (!HasAccess(FILE_WRITE_DATA, Irp->RequestorMode, &Irp->IoStatus.Status))
+    if (!HasAccess(FILE_WRITE_DATA, Irp->RequestorMode, &Status))
         goto cleanup;
 
     IO_STACK_LOCATION *Stack = IoGetCurrentIrpStackLocation(Irp);
