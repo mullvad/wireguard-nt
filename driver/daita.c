@@ -539,8 +539,6 @@ DaitaClose(_Inout_ WG_DEVICE *Wg)
     WriteBooleanNoFence(&Wg->Daita.Enabled, FALSE);
 
     KeReleaseSpinLock(&Wg->Daita.Event.Lock, OldIrql);
-
-    RtlZeroMemory(&Wg->Daita, sizeof(Wg->Daita));
 }
 
 #ifdef ALLOC_PRAGMA
