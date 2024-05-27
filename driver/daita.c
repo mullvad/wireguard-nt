@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2023 Mullvad AB. All Rights Reserved.
+ * Copyright (C) 2024 Mullvad AB. All Rights Reserved.
  *
  * DAITA - Defence Against AI-Guided Traffic Analysis
  */
@@ -11,7 +11,7 @@
 #include "queueing.h"
 #include <ntddk.h>
 
-static DRIVER_DISPATCH *NdisDispatchDeviceControl, *NdisDispatchPnp;
+static DRIVER_DISPATCH *NdisDispatchDeviceControl;
 
 static inline VOID
 CopyPubkey(
@@ -47,10 +47,16 @@ DaitaEmitEvent(
 
     DAITA_SESSION_INTERNAL *Daita = &Peer->Device->Daita;
 
-    ULONG ReadOffset = ReadULongAcquire(&Daita->Event.Ring->ReadOffset) % Daita->Event.Capacity;
-
     KIRQL OldIrql;
     KeAcquireSpinLock(&Daita->Event.Lock, &OldIrql);
+
+    /* Check enabled state again while holding event lock, as the memory might be unlocked/invalidated */
+    if (!ReadBooleanNoFence(&Peer->Device->Daita.Enabled))
+    {
+        goto releaseLock;
+    }
+
+    ULONG ReadOffset = ReadULongAcquire(&Daita->Event.Ring->ReadOffset) % Daita->Event.Capacity;
 
     ULONG WriteOffset = ReadULongAcquire(&Daita->Event.WriteOffset);
     ULONG NewWriteOffset = (WriteOffset + 1) % Daita->Event.Capacity;
@@ -72,9 +78,13 @@ DaitaEmitEvent(
     /* Bump shared write pointer and signal write event */
     WriteULongRelease(&Daita->Event.Ring->WriteOffset, NewWriteOffset);
 
-    KeReleaseSpinLock(&Daita->Event.Lock, OldIrql);
-
     KeSetEvent(Daita->Event.DataAvailable, IO_NETWORK_INCREMENT, FALSE);
+
+    /* fall-through */
+
+releaseLock:
+
+    KeReleaseSpinLock(&Daita->Event.Lock, OldIrql);
     return;
 
 releaseLockFull:
@@ -305,7 +315,7 @@ DaitaActivate(_In_ DEVICE_OBJECT *DeviceObject, _Inout_ IRP *Irp)
 
     Irp->IoStatus.Information = 0;
 
-    if (!HasAccess(FILE_WRITE_DATA, Irp->RequestorMode, &Irp->IoStatus.Status))
+    if (!HasAccess(FILE_WRITE_DATA, Irp->RequestorMode, &Status))
         goto cleanup;
 
     IO_STACK_LOCATION *Stack = IoGetCurrentIrpStackLocation(Irp);
@@ -492,6 +502,7 @@ DispatchDeviceControl(DEVICE_OBJECT *DeviceObject, IRP *Irp)
     return Status;
 }
 
+_Use_decl_annotations_
 VOID
 DaitaClose(_Inout_ WG_DEVICE *Wg)
 {
@@ -511,37 +522,23 @@ DaitaClose(_Inout_ WG_DEVICE *Wg)
     }
     ZwClose(Wg->Daita.Action.HandlerThread);
 
+    /* No lock is needed because the action thread is stopped */
     MmUnlockPages(Wg->Daita.Action.Mdl);
     IoFreeMdl(Wg->Daita.Action.Mdl);
     ObDereferenceObject(Wg->Daita.Action.DataAvailable);
 
+    /* Acquire event lock in case we're in the middle of handling an event */
+    KIRQL OldIrql;
+    KeAcquireSpinLock(&Wg->Daita.Event.Lock, &OldIrql);
+
     MmUnlockPages(Wg->Daita.Event.Mdl);
     IoFreeMdl(Wg->Daita.Event.Mdl);
+
     ObDereferenceObject(Wg->Daita.Event.DataAvailable);
 
     WriteBooleanNoFence(&Wg->Daita.Enabled, FALSE);
-    RtlZeroMemory(&Wg->Daita, sizeof(Wg->Daita));
-}
 
-_Dispatch_type_(IRP_MJ_PNP)
-static DRIVER_DISPATCH_PAGED DispatchPnp;
-_Use_decl_annotations_
-static NTSTATUS
-DispatchPnp(DEVICE_OBJECT *DeviceObject, IRP *Irp)
-{
-    IO_STACK_LOCATION *Stack = IoGetCurrentIrpStackLocation(Irp);
-    if (Stack->MinorFunction != IRP_MN_QUERY_REMOVE_DEVICE && Stack->MinorFunction != IRP_MN_SURPRISE_REMOVAL)
-        goto ndisDispatch;
-
-    WG_DEVICE *Wg = DeviceObject->Reserved;
-    if (!Wg)
-        goto ndisDispatch;
-
-    DaitaClose(Wg);
-    /* intentional fall-through */
-
-ndisDispatch:
-    return NdisDispatchPnp(DeviceObject, Irp);
+    KeReleaseSpinLock(&Wg->Daita.Event.Lock, OldIrql);
 }
 
 #ifdef ALLOC_PRAGMA
@@ -552,7 +549,5 @@ VOID
 DaitaDriverEntry(DRIVER_OBJECT *DriverObject)
 {
     NdisDispatchDeviceControl = DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL];
-    NdisDispatchPnp = DriverObject->MajorFunction[IRP_MJ_PNP];
     DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DispatchDeviceControl;
-    DriverObject->MajorFunction[IRP_MJ_PNP] = DispatchPnp;
 }
