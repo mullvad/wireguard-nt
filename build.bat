@@ -11,31 +11,35 @@ if [%2]==[] goto USAGE
 set CERT_THUMBPRINT=%1
 set CROSSCERT=%2
 set TIMESTAMP_SERVER=http://timestamp.digicert.com
+set OUT_DIR_ARCH=%VSCMD_ARG_TGT_ARCH%
+if "%OUT_DIR_ARCH%"=="x64" (
+  set OUT_DIR_ARCH=amd64
+)
 
 set ROOT=%~dp0
 
 rmdir /s /q %ROOT%Release
 
-msbuild.exe %ROOT%driver\driver.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SignMode=Off
+msbuild.exe %ROOT%driver\driver.vcxproj /p:Configuration=Release /p:Platform=%VSCMD_ARG_TGT_ARCH% /p:SignMode=Off
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 :: Sign driver
 
-signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\amd64\driver\mullvad-wireguard.sys
+signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.sys
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 :: Re-generate catalog file now that driver binary has changed
 
-del %ROOT%Release\amd64\driver\mullvad-wireguard.cat
-"%WindowsSdkVerBinPath%x86\inf2cat.exe" /driver:%ROOT%Release\amd64\driver /os:"10_x64" /verbose
+del %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.cat
+"%WindowsSdkVerBinPath%x86\inf2cat.exe" /driver:%ROOT%Release\%OUT_DIR_ARCH%\driver /os:"10_%VSCMD_ARG_TGT_ARCH%" /verbose
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 :: Sign catalog
 
-signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\amd64\driver\mullvad-wireguard.cat
+signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.cat
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
@@ -43,7 +47,7 @@ IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 rmdir /s /q %ROOT%bin\dist
 mkdir %ROOT%bin\dist
-copy /b %ROOT%Release\amd64\driver\* %ROOT%bin\dist\
+copy /b %ROOT%Release\%OUT_DIR_ARCH%\driver\* %ROOT%bin\dist\
 
 ::
 :: Build a CAB file for submission to the MS Hardware Dev Center
