@@ -6,10 +6,8 @@ if [%VisualStudioVersion%]==[] (
 )
 
 if [%1]==[] goto USAGE
-if [%2]==[] goto USAGE
 
 set CERT_THUMBPRINT=%1
-set CROSSCERT=%2
 set TIMESTAMP_SERVER=http://timestamp.digicert.com
 set OUT_DIR_ARCH=%VSCMD_ARG_TGT_ARCH%
 if "%OUT_DIR_ARCH%"=="x64" (
@@ -26,7 +24,7 @@ IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 :: Sign driver
 
-signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.sys
+signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.sys
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
@@ -39,7 +37,7 @@ IF %ERRORLEVEL% NEQ 0 goto ERROR
 
 :: Sign catalog
 
-signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.cat
+signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v %ROOT%Release\%OUT_DIR_ARCH%\driver\mullvad-wireguard.cat
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
@@ -59,7 +57,7 @@ popd
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
-signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v /ac %ROOT%%CROSSCERT% %ROOT%bin\dist\win10\mullvad-wireguard.cab
+signtool sign /tr %TIMESTAMP_SERVER% /td sha256 /fd sha256 /sha1 "%1" /v %ROOT%bin\dist\win10\mullvad-wireguard.cab
 
 IF %ERRORLEVEL% NEQ 0 goto ERROR
 
