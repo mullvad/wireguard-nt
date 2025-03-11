@@ -163,11 +163,13 @@ Get(_In_ DEVICE_OBJECT *DeviceObject, _Inout_ IRP *Irp)
             {
                 IoctlPeer->Endpoint.Ipv4 = Peer->Endpoint.Addr.Ipv4;
                 IoctlPeer->Flags |= WG_IOCTL_PEER_HAS_ENDPOINT;
+                IoctlPeer->Multihop = Peer->Multihop;
             }
             else if (Peer->Endpoint.Addr.si_family == AF_INET6)
             {
                 IoctlPeer->Endpoint.Ipv6 = Peer->Endpoint.Addr.Ipv6;
                 IoctlPeer->Flags |= WG_IOCTL_PEER_HAS_ENDPOINT;
+                IoctlPeer->Multihop = Peer->Multihop;
             }
             ExReleaseSpinLockShared(&Peer->EndpointLock, Irql);
         }
@@ -331,6 +333,8 @@ SetPeer(_Inout_ WG_DEVICE *Wg, _Inout_ CONST volatile WG_IOCTL_PEER **UnsafeIoct
 
     if (IoctlPeer.Flags & WG_IOCTL_PEER_HAS_ENDPOINT)
     {
+        Peer->Multihop = IoctlPeer.Multihop;
+
         SIZE_T Size;
         if ((Size = sizeof(SOCKADDR_IN), IoctlPeer.Endpoint.si_family == AF_INET) ||
             (Size = sizeof(SOCKADDR_IN6), IoctlPeer.Endpoint.si_family == AF_INET6))

@@ -55,6 +55,7 @@ ReceiveHandshakePacket(_Inout_ WG_DEVICE *Wg, _In_ NET_BUFFER_LIST *Nbl)
     }
     else if (LastUnderLoad)
     {
+        /* set UnderLoad to false if at least 1 sec since it was last set to true */
         UnderLoad = !BirthdateHasExpired(LastUnderLoad, 1);
         if (!UnderLoad)
             LastUnderLoad = 0;

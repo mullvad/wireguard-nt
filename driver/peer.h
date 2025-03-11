@@ -72,6 +72,7 @@ typedef struct _WG_PEER
     LIST_ENTRY PeerList;
     LIST_ENTRY AllowedIpsList;
     UINT64 InternalId;
+    BOOLEAN Multihop;
 } WG_PEER;
 
 _IRQL_requires_max_(DISPATCH_LEVEL)
