@@ -6,7 +6,6 @@
 #include "interlocked.h"
 #include "containers.h"
 #include "device.h"
-#include "daita_internal.h"
 #include "ioctl.h"
 #include "messages.h"
 #include "peer.h"
@@ -163,6 +162,15 @@ SendNetBufferLists(
             goto returnNbl;
         }
 
+        NET_BUFFER_LIST *CloneNbl = MemAllocateNetBufferListWithClonedGeometry(
+            Nbl, sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + MESSAGE_PADDING_MULTIPLE - 1);
+        if (!CloneNbl)
+        {
+            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_RESOURCES;
+            goto returnNbl;
+        }
+        Nbl = CloneNbl;
+
         CONST UINT16_BE Protocol = NET_BUFFER_LIST_PROTOCOL(Nbl);
         IPV4HDR *Header4 = NULL;
         IPV6HDR *Header6 = NULL;
@@ -199,7 +207,6 @@ SendNetBufferLists(
             ++Wg->Statistics.ifOutErrors;
             goto returnNbl;
         }
-
         ADDRESS_FAMILY Family = ReadUShortNoFence(&Peer->Endpoint.Addr.si_family);
         if (Family != AF_INET && Family != AF_INET6)
         {
@@ -208,36 +215,6 @@ SendNetBufferLists(
             NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_FAILURE;
             ++Wg->Statistics.ifOutErrors;
             goto cleanupPeer;
-        }
-
-        ULONG AdditionalNbBytes = sizeof(MESSAGE_DATA) + NoiseEncryptedLen(0) + MESSAGE_PADDING_MULTIPLE - 1;
-        if (Peer->ConstantPacketSize)
-        {
-            ULONG MinRealSize = ULONG_MAX;
-            for (NET_BUFFER *CurrentNb = Nb; CurrentNb; CurrentNb = NET_BUFFER_NEXT_NB(CurrentNb))
-            {
-                MinRealSize = min(MinRealSize, NET_BUFFER_DATA_LENGTH(CurrentNb));
-            }
-            ULONG Mtu = Family == AF_INET ? Peer->Device->Mtu4 : Peer->Device->Mtu6;
-            if (Mtu > MinRealSize)
-            {
-                /* Allocate extra bytes to each net buffer */
-                /* TODO: Excessive when there are multiple NBs. Can it be done per-NB? */
-                AdditionalNbBytes += Mtu - MinRealSize;
-            }
-        }
-
-        NET_BUFFER_LIST *CloneNbl = MemAllocateNetBufferListWithClonedGeometry(Nbl, AdditionalNbBytes);
-        if (!CloneNbl)
-        {
-            NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_RESOURCES;
-            goto returnNbl;
-        }
-        Nbl = CloneNbl;
-
-        if (ReadBooleanNoFence(&Peer->Device->Daita.Enabled))
-        {
-            DaitaNonpaddingSent(Peer, NET_BUFFER_DATA_LENGTH(Nb));
         }
 
         KIRQL Irql;
@@ -396,9 +373,6 @@ static VOID
 HaltEx(NDIS_HANDLE MiniportAdapterContext, NDIS_HALT_ACTION HaltAction)
 {
     WG_DEVICE *Wg = (WG_DEVICE *)MiniportAdapterContext;
-
-    DaitaClose(Wg);
-
     IoctlHalt(Wg);
     MuAcquirePushLockExclusive(&DeviceListLock);
     RemoveEntryList(&Wg->DeviceList);
@@ -1012,7 +986,6 @@ DeviceDriverEntry(DRIVER_OBJECT *DriverObject, UNICODE_STRING *RegistryPath)
     if (!NT_SUCCESS(Status))
         goto cleanupIpInterfaceNotifierBugWorkaround;
     IoctlDriverEntry(DriverObject);
-    DaitaDriverEntry(DriverObject);
     return STATUS_SUCCESS;
 
 cleanupIpInterfaceNotifierBugWorkaround:

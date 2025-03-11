@@ -42,8 +42,7 @@ typedef enum
     WG_IOCTL_PEER_HAS_PROTOCOL_VERSION = 1 << 4,
     WG_IOCTL_PEER_REPLACE_ALLOWED_IPS = 1 << 5,
     WG_IOCTL_PEER_REMOVE = 1 << 6,
-    WG_IOCTL_PEER_UPDATE = 1 << 7,
-    WG_IOCTL_PEER_HAS_CONSTANT_PACKET_SIZE = 1 << 8
+    WG_IOCTL_PEER_UPDATE = 1 << 7
 } WG_IOCTL_PEER_FLAG;
 
 typedef __declspec(align(8)) struct _WG_IOCTL_PEER
@@ -58,7 +57,6 @@ typedef __declspec(align(8)) struct _WG_IOCTL_PEER
     ULONG64 RxBytes;
     ULONG64 LastHandshake;
     ULONG AllowedIPsCount;
-    BOOLEAN ConstantPacketSize;
 } WG_IOCTL_PEER;
 
 typedef enum
@@ -125,10 +123,6 @@ IoctlHalt(_Inout_ WG_DEVICE *Wg);
 _IRQL_requires_max_(APC_LEVEL)
 VOID
 IoctlDriverEntry(_In_ DRIVER_OBJECT *DriverObject);
-
-_IRQL_requires_max_(PASSIVE_LEVEL)
-BOOLEAN
-HasAccess(_In_ ACCESS_MASK DesiredAccess, _In_ KPROCESSOR_MODE AccessMode, _Out_ NTSTATUS *Status);
 
 #endif
 

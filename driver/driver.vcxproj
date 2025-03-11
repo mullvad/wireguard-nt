@@ -43,7 +43,6 @@
     <ClCompile Include="allowedips.c" />
     <ClCompile Include="cookie.c" />
     <ClCompile Include="crypto.c" />
-    <ClCompile Include="daita.c" />
     <ClCompile Include="device.c" />
     <ClCompile Include="ioctl.c" />
     <ClCompile Include="logging.c" />
@@ -82,8 +81,6 @@
   <ItemGroup>
     <ClInclude Include="allowedips.h" />
     <ClInclude Include="arithmetic.h" />
-    <ClInclude Include="daita.h" />
-    <ClInclude Include="daita_internal.h" />
     <ClInclude Include="interlocked.h" />
     <ClInclude Include="containers.h" />
     <ClInclude Include="cookie.h" />

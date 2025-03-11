@@ -18,9 +18,6 @@ extern const DEVPROPKEY DEVPKEY_WireGuard_Name;
 
 typedef struct HSWDEVICE__ *HSWDEVICE;
 
-struct _DAITA_SESSION;
-typedef struct _DAITA_SESSION DAITA_SESSION;
-
 /**
  * WireGuard adapter descriptor.
  */
@@ -37,7 +34,6 @@ typedef struct _WIREGUARD_ADAPTER
     DWORD IfIndex;
     HANDLE LogThread;
     DWORD LogState;
-    DAITA_SESSION *DaitaSession;
 } WIREGUARD_ADAPTER;
 /**
  * @copydoc WIREGUARD_CREATE_ADAPTER_FUNC
@@ -141,6 +137,3 @@ AdapterEnableInstance(_In_ HDEVINFO DevInfo, _In_ SP_DEVINFO_DATA *DevInfoData);
 _Return_type_success_(return != FALSE)
 BOOL
 AdapterDisableInstance(_In_ HDEVINFO DevInfo, _In_ SP_DEVINFO_DATA *DevInfoData);
-
-VOID WINAPI
-FreeDaitaSession(DAITA_SESSION *Session);

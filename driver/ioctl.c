@@ -62,8 +62,8 @@ static SECURITY_DESCRIPTOR *DispatchSecurityDescriptor = (SECURITY_DESCRIPTOR *)
     0x00, 0x20, 0x02, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x12, 0x00, 0x00, 0x00
 };
 
-_Use_decl_annotations_
-BOOLEAN
+_IRQL_requires_max_(PASSIVE_LEVEL)
+static BOOLEAN
 HasAccess(_In_ ACCESS_MASK DesiredAccess, _In_ KPROCESSOR_MODE AccessMode, _Out_ NTSTATUS *Status)
 {
     SECURITY_SUBJECT_CONTEXT SubjectContext;
@@ -148,11 +148,6 @@ Get(_In_ DEVICE_OBJECT *DeviceObject, _Inout_ IRP *Irp)
             IoctlPeer->TxBytes = Peer->TxBytes;
             IoctlPeer->LastHandshake = Peer->WalltimeLastHandshake.QuadPart;
             IoctlPeer->AllowedIPsCount = 0;
-            if (Peer->ConstantPacketSize)
-            {
-                IoctlPeer->ConstantPacketSize = Peer->ConstantPacketSize;
-                IoctlPeer->Flags |= WG_IOCTL_PEER_HAS_CONSTANT_PACKET_SIZE;
-            }
             MuAcquirePushLockShared(&Peer->Handshake.Lock);
             RtlCopyMemory(IoctlPeer->PublicKey, Peer->Handshake.RemoteStatic, NOISE_PUBLIC_KEY_LEN);
             IoctlPeer->Flags |= WG_IOCTL_PEER_HAS_PUBLIC_KEY;
@@ -371,9 +366,6 @@ SetPeer(_Inout_ WG_DEVICE *Wg, _Inout_ CONST volatile WG_IOCTL_PEER **UnsafeIoct
         if (!NT_SUCCESS(Status))
             goto cleanupPeer;
     }
-
-    if (IoctlPeer.Flags & WG_IOCTL_PEER_HAS_CONSTANT_PACKET_SIZE)
-        WriteBooleanRelease(&Peer->ConstantPacketSize, IoctlPeer.ConstantPacketSize);
 
     BOOLEAN IsUp = ReadBooleanNoFence(&Wg->IsUp);
     if (IoctlPeer.Flags & WG_IOCTL_PEER_HAS_PERSISTENT_KEEPALIVE)

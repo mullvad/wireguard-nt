@@ -63,7 +63,6 @@
     <ClInclude Include="wireguard.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="daita.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="adapter.c" />
     <ClCompile Include="driver.c" />

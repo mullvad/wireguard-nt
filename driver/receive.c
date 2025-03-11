@@ -13,7 +13,6 @@
 #include "socket.h"
 #include "timers.h"
 #include "logging.h"
-#include "arithmetic.h"
 
 static VOID
 UpdateRxStats(_Inout_ WG_PEER *Peer, _In_ CONST ULONG Len)
@@ -286,36 +285,14 @@ PacketConsumeDataDone(_Inout_ WG_PEER *Peer, _Inout_ NET_BUFFER_LIST *Nbl)
     TimersAnyAuthenticatedPacketReceived(Peer);
     TimersAnyAuthenticatedPacketTraversal(Peer);
 
-    ULONG NbLength = NET_BUFFER_DATA_LENGTH(Nb);
-
     /* A packet with length 0 is a keepalive packet */
-    if (!NbLength)
+    if (!NET_BUFFER_DATA_LENGTH(Nb))
     {
         UpdateRxStats(Peer, MessageDataLen(0));
         SockaddrToString(EndpointName, &Peer->Endpoint.Addr);
         LogInfoRatelimited(
             Peer->Device, "Receiving keepalive packet from peer %llu (%s)", Peer->InternalId, EndpointName);
         goto packetProcessed;
-    }
-
-    if (ReadBooleanNoFence(&Peer->Device->Daita.Enabled) && NbLength >= sizeof(DAITA_PADDING))
-    {
-        DAITA_PADDING *Padding = (DAITA_PADDING *)NdisGetDataBuffer(Nb, sizeof(DAITA_PADDING), NULL, 1, 0);
-        if (Padding && Padding->Tag == DAITA_PADDING_TAG)
-        {
-            USHORT PaddingLength = Ntohs(Padding->TotalLength);
-
-            /* sanity check padding */
-            if (PaddingLength > NbLength)
-            {
-                LogDaitaInfoRatelimited(
-                    Peer->Device, "Dropping padding packet of incorrect size. Header: %u. Actual: %lu", PaddingLength, NbLength);
-                goto dishonestPacketSize;
-            }
-
-            DaitaPaddingReceived(Peer, PaddingLength);
-            goto packetProcessed;
-        }
     }
 
     TimersDataReceived(Peer);
@@ -364,8 +341,6 @@ PacketConsumeDataDone(_Inout_ WG_PEER *Peer, _Inout_ NET_BUFFER_LIST *Nbl)
 
     if (RoutedPeer != Peer)
         goto dishonestPacketPeer;
-
-    DaitaNonpaddingReceived(Peer, Len);
 
     NET_BUFFER_LIST_STATUS(Nbl) = NDIS_STATUS_SUCCESS;
     UpdateRxStats(Peer, MessageDataLen(LenBeforeTrim));

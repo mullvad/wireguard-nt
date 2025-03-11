@@ -12,7 +12,3 @@ EXPORTS
 	WireGuardSetAdapterState
 	WireGuardSetConfiguration
 	WireGuardSetLogger
-	WireGuardDaitaActivate
-	WireGuardDaitaEventDataAvailableEvent
-	WireGuardDaitaReceiveEvents
-	WireGuardDaitaSendAction
