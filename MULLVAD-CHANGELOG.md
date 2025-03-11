@@ -20,6 +20,8 @@ Line wrap the file at 100 chars.                                              Th
 * **Security**: in case of vulnerabilities.
 
 ## [Unreleased]
+### Removed
+- Remove DAITA and constant packet size.
 
 ## [1.1.3] - 2024-08-12
 ### Changed
